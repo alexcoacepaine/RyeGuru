@@ -4,7 +4,6 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 
 const PORT = Number(process.env.PORT || 8787);
@@ -14,6 +13,7 @@ const UI = path.join(import.meta.dirname, "dist", "mcp-app.html");
 const FORMULAS = path.join(ROOT, "formulas", "formula_groups.jsonl");
 const MISSING = "Nu este documentat în sursele RYE disponibile.";
 const RESOURCE_URI = "ui://rye/search/mcp-app.html";
+const RESOURCE_MIME = "text/html;profile=mcp-app";
 
 function db() { return new Database(DB, { readonly: true }); }
 
@@ -64,20 +64,22 @@ async function formula(formula_id: string) {
   return { formula_id, status: "not_found", note: MISSING };
 }
 
+const appToolMeta = { _meta: { ui: { resourceUri: RESOURCE_URI } } } as const;
+
 function createServer() {
   const server = new McpServer({ name: "RYE Core", version: "0.1.0" });
 
-  registerAppTool(server, "search_rye", {
+  server.registerTool("search_rye", {
     title: "Caută în RYE",
     description: "Caută exclusiv în corpusul RYE și returnează dovezi cu sursă și pagină.",
     inputSchema: { query: z.string().min(1), limit: z.number().int().min(1).max(20).optional() },
-    _meta: { ui: { resourceUri: RESOURCE_URI } },
-  }, async ({ query, limit = 8 }) => {
+    ...appToolMeta,
+  } as any, async ({ query, limit = 8 }) => {
     const result = searchRye(query, limit);
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
 
-  registerAppTool(server, "get_rye_evidence", {
+  server.registerTool("get_rye_evidence", {
     title: "Dovadă RYE",
     description: "Recuperează pasajele unei surse la o pagină exactă.",
     inputSchema: { source_id: z.string(), page: z.number().int().min(1) },
@@ -86,7 +88,7 @@ function createServer() {
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
 
-  registerAppTool(server, "get_formula", {
+  server.registerTool("get_formula", {
     title: "Formulă RYE",
     description: "Recuperează o formulă și păstrează explicit statutul de validare.",
     inputSchema: { formula_id: z.string() },
@@ -95,7 +97,7 @@ function createServer() {
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
 
-  registerAppTool(server, "compare_sources", {
+  server.registerTool("compare_sources", {
     title: "Compară surse RYE",
     description: "Compară rezultatele recuperate din mai multe surse fără reconciliere automată.",
     inputSchema: { topic: z.string().min(1), source_ids: z.array(z.string()).optional() },
@@ -106,7 +108,7 @@ function createServer() {
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
 
-  registerAppTool(server, "calculate_formula", {
+  server.registerTool("calculate_formula", {
     title: "Scalează formulă RYE",
     description: "Scaling mecanic. Formulele nevalidate sunt refuzate.",
     inputSchema: { formula_id: z.string(), target_factor: z.number().positive() },
@@ -115,8 +117,12 @@ function createServer() {
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
 
-  registerAppResource(server, RESOURCE_URI, "RYE Search UI", { mimeType: RESOURCE_MIME_TYPE }, async () => ({
-    contents: [{ uri: RESOURCE_URI, mimeType: RESOURCE_MIME_TYPE, text: await fs.readFile(UI, "utf8") }]
+  server.registerResource("rye-search-ui", RESOURCE_URI, {
+    title: "RYE Search UI",
+    description: "Interfața RYE pentru rezultate de căutare.",
+    mimeType: RESOURCE_MIME,
+  }, async (uri) => ({
+    contents: [{ uri: uri.href, mimeType: RESOURCE_MIME, text: await fs.readFile(UI, "utf8") }]
   }));
 
   return server;

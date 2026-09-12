@@ -7,7 +7,7 @@
     "serve": "tsx server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "release-1.25",
+    "@modelcontextprotocol/sdk": "1.25.3",
     "zod": "latest"
   },
   "devDependencies": {

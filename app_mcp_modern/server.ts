@@ -1,7 +1,7 @@
 import { createServer as createHttpServer } from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
@@ -29,7 +29,9 @@ type EvidenceRow = {
   text: string;
 };
 
-function db() { return new Database(DB, { readonly: true }); }
+function db() {
+  return new DatabaseSync(DB, { readOnly: true });
+}
 
 function searchRye(query: string, limit: number) {
   const con = db();

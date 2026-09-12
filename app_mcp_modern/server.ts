@@ -15,7 +15,6 @@ const MISSING = "Nu este documentat în sursele RYE disponibile.";
 const RESOURCE_URI = "ui://rye/search/mcp-app.html";
 const RESOURCE_MIME = "text/html;profile=mcp-app";
 
-type SearchArgs = { query: string; limit?: number };
 type EvidenceArgs = { source_id: string; page: number };
 type FormulaArgs = { formula_id: string };
 type CompareArgs = { topic: string; source_ids?: string[] };
@@ -88,9 +87,9 @@ function createServer() {
   server.registerTool("search_rye", {
     title: "Caută în RYE",
     description: "Caută exclusiv în corpusul RYE și returnează dovezi cu sursă și pagină.",
-    inputSchema: { query: z.string().min(1), limit: z.number().int().min(1).max(20).optional() },
+    inputSchema: z.object({ query: z.string().min(1), limit: z.number().int().min(1).max(20).optional() }),
     ...appToolMeta,
-  } as any, async ({ query, limit = 8 }: SearchArgs) => {
+  }, async ({ query, limit = 8 }) => {
     const result = searchRye(query, limit);
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
   });
@@ -98,7 +97,7 @@ function createServer() {
   server.registerTool("get_rye_evidence", {
     title: "Dovadă RYE",
     description: "Recuperează pasajele unei surse la o pagină exactă.",
-    inputSchema: { source_id: z.string(), page: z.number().int().min(1) },
+    inputSchema: z.object({ source_id: z.string(), page: z.number().int().min(1) }),
   }, async ({ source_id, page }: EvidenceArgs) => {
     const result = evidence(source_id, page);
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -107,7 +106,7 @@ function createServer() {
   server.registerTool("get_formula", {
     title: "Formulă RYE",
     description: "Recuperează o formulă și păstrează explicit statutul de validare.",
-    inputSchema: { formula_id: z.string() },
+    inputSchema: z.object({ formula_id: z.string() }),
   }, async ({ formula_id }: FormulaArgs) => {
     const result = await formula(formula_id);
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -116,7 +115,7 @@ function createServer() {
   server.registerTool("compare_sources", {
     title: "Compară surse RYE",
     description: "Compară rezultatele recuperate din mai multe surse fără reconciliere automată.",
-    inputSchema: { topic: z.string().min(1), source_ids: z.array(z.string()).optional() },
+    inputSchema: z.object({ topic: z.string().min(1), source_ids: z.array(z.string()).optional() }),
   }, async ({ topic, source_ids }: CompareArgs) => {
     const base = searchRye(topic, 20);
     const filtered = source_ids?.length
@@ -129,7 +128,7 @@ function createServer() {
   server.registerTool("calculate_formula", {
     title: "Scalează formulă RYE",
     description: "Scaling mecanic. Formulele nevalidate sunt refuzate.",
-    inputSchema: { formula_id: z.string(), target_factor: z.number().positive() },
+    inputSchema: z.object({ formula_id: z.string(), target_factor: z.number().positive() }),
   }, async ({ formula_id }: CalculateArgs) => {
     const result = {
       formula_id,

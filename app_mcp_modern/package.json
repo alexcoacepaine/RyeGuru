@@ -8,11 +8,9 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "release-1.25",
-    "better-sqlite3": "latest",
     "zod": "latest"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "latest",
     "@types/node": "latest",
     "typescript": "latest",
     "tsx": "latest",

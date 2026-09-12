@@ -7,7 +7,7 @@
     "serve": "tsx server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest",
+    "@modelcontextprotocol/sdk": "release-1.25",
     "better-sqlite3": "latest",
     "zod": "latest"
   },

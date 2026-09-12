@@ -1,0 +1,21 @@
+{
+  "name": "rye-core-mcp-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && tsc --noEmit",
+    "serve": "tsx server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "@modelcontextprotocol/ext-apps": "latest",
+    "better-sqlite3": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "tsx": "latest",
+    "vite": "latest",
+    "vite-plugin-singlefile": "latest"
+  }
+}

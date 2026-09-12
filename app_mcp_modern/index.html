@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RYE</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#fff;color:#171717}
+h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;opacity:.65;margin-bottom:16px}
+.card{border:1px solid #ddd;border-radius:12px;padding:12px;margin-top:10px}
+.source{font-size:12px;font-weight:650}.page{opacity:.65}.text{margin-top:8px;white-space:pre-wrap;font-size:14px;line-height:1.45}
+.badge{font-size:11px;padding:3px 7px;border-radius:999px;background:#eee}
+</style>
+</head>
+<body>
+<h1>RYE</h1>
+<div class="sub">Rye Bread Corpus · source-grounded retrieval</div>
+<div id="status"><span class="badge">Evidence mode</span></div>
+<div id="results"></div>
+<script>
+window.renderRYEResults=function(payload){
+ const root=document.getElementById('results'); root.innerHTML='';
+ (payload?.results||[]).forEach(r=>{
+  const el=document.createElement('div'); el.className='card';
+  el.innerHTML='<div class="source"></div><div class="text"></div>';
+  el.querySelector('.source').textContent=(r.source_id||'')+' p.'+(r.page??'—');
+  el.querySelector('.text').textContent=r.text||''; root.appendChild(el);
+ });
+};
+</script>
+</body>
+</html>
